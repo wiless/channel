@@ -3,7 +3,6 @@
 package channel
 
 import (
-	"fmt"
 	"log"
 	"math/rand"
 )
@@ -13,7 +12,7 @@ import (
 type Env struct {
 	EnvParams TestEnvironment //TestEnvironment Parameters based on in M.2412
 	NLinks    int             // Number of wireless links
-	Links     []WirelessLink
+	Links     []*WirelessLink
 	base      BaseParam
 }
 
@@ -41,24 +40,39 @@ func (e *Env) Setup(fGHz float64, bwMHz float64) {
 // Create creates nlinks with each link having NxM mimo configuration where mimo=[N,M], mimo=[] then 1x1 system is assumed
 func (e *Env) Create(nlinks int, ntx, nrx int) {
 	e.NLinks = nlinks
-	e.Links = make([]WirelessLink, nlinks)
-
+	e.Links = make([]*WirelessLink, nlinks)
 	log.Printf("\n Creating %d x %d Links ", ntx, nrx)
-	for i, link := range e.Links {
-		link.ID = i
-		link.BaseParam = e.base
-		link.NTx, link.NRx = ntx, nrx
-		fmt.Printf("\r %d ", i)
+	for i, _ := range e.Links {
+		e.Links[i] = new(WirelessLink)
+		e.Links[i].ID = i
+		e.Links[i].BaseParam = e.base
+		e.Links[i].SetMIMO(ntx, nrx)
 	}
 }
 
 // AttachGenerator attaches the fading generator fg,
 // if clone=true all fading generator has same seed
 func (e *Env) AttachGeneratorIID() {
+	if len(e.Links) == 0 {
+		return
+	}
 
 	for i := 0; i < len(e.Links); i++ {
-		state := rand.Uint64()
-		iid := NewGeneratorIID(state)
-		e.Links[i].generator = iid
+		if e.Links[i].IsMIMO() {
+			M, N := e.Links[i].Dims()
+
+			for m := 0; m < M; m++ {
+				for n := 0; n < N; n++ {
+					state := rand.Uint64()
+					e.Links[i].genMIMO[m][n] = NewGeneratorIID(state)
+				}
+			}
+
+		} else {
+			state := rand.Uint64()
+			iid := NewGeneratorIID(state)
+			e.Links[i].SetGenerator(iid)
+		}
+
 	}
 }

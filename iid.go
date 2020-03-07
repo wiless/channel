@@ -1,9 +1,6 @@
 package channel
 
 import (
-	"fmt"
-
-	"github.com/Sirupsen/logrus"
 	"golang.org/x/exp/rand"
 	"gonum.org/v1/gonum/stat/distuv"
 )
@@ -30,7 +27,7 @@ func NewGeneratorIID(seed uint64) *GeneratorIID {
 	iid.state = seed
 	iid.tInterval = 1.0
 	iid.lastSampletime = 0
-	logrus.Infof("Created Seed %v |  %v", iid.rndgen.Src.Uint64(), seed)
+	// logrus.Infof("Created Seed %v |  %v", iid.rndgen.Src.Uint64(), seed)
 	// distuv.Normal{
 	// 	Mu:    0,
 	// 	Sigma: 1.0,
@@ -39,7 +36,7 @@ func NewGeneratorIID(seed uint64) *GeneratorIID {
 }
 
 func (g *GeneratorIID) Reset(seed uint64) {
-	fmt.Println("Setting State ", seed)
+	// fmt.Println("Setting State ", seed)
 	g.state = seed
 	g.rndgen.Src.Seed(seed)
 	// fmt.Println("Test.. ", g.rndgen.Rand())
