@@ -90,8 +90,8 @@ func NewEnvironment(configname string) (TestEnvironment, error) {
 func sqrtXCorr(xc *mat.Dense) *mat.Dense {
 	N := xc.RawMatrix().Rows
 	Rc := mat.NewSymDense(N, xc.RawMatrix().Data)
-	fmt.Printf("Rc =%v\n", Rc)
-	fmt.Printf("\nRc= %v \n\n", mat.Formatted(Rc, mat.Prefix("    ")))
+	//	fmt.Printf("Rc =%v\n", Rc)
+	//fmt.Printf("\nRc= %v \n\n", mat.Formatted(Rc, mat.Prefix("    ")))
 
 	/// Create & Save the L matrix, (where  L*L'=Rc )
 	var sqRC mat.Cholesky
@@ -105,6 +105,7 @@ func sqrtXCorr(xc *mat.Dense) *mat.Dense {
 	// Save(Lmat1.RawTriangular(), output)
 
 	sqx := mat.NewDense(N, N, Lmat1.RawTriangular().Data)
+	//	fmt.Printf("\nsqx = %v \n\n", mat.Formatted(sqx, mat.Prefix("      ")))
 	return sqx
 }
 
