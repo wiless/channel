@@ -1,0 +1,88 @@
+{
+    "ENV":"InH",
+    "DS":{
+        "Mu":[-7.70,-7.41],
+	    "Sigma":[0.18,0.14]
+
+    },
+    "ASD":{
+        "Mu":[1.60,1.62],
+	    "Sigma":[0.18,0.25]
+
+
+    },
+    "ASA":{
+       "Mu":[1.62,1.77],
+	   "Sigma":[0.22,0.16]
+
+    },
+    "ZSA":{
+        "Mu":[0.22,1.26],
+	    "Sigma":[0.23,0.67]
+    },
+	"SF":[3,4],
+    "KdB":{
+        "Mu":[7,0],
+	    "Sigma":[4,0]
+
+    },
+	
+	"Crosscorr":{
+        
+    "SFvsK":[0.5,0],
+    "DSvsK": [-0.5,0],       
+	"ASDvsK": [0,0],       
+	"ASAvsK": [0,0],      
+	"ZSDvsK":   [0,0],   
+	"ZSAvsK": [0.1,0],
+	"DSvsSF":[-0.8,-0.5],
+	"ASDvsSF": [-0.4,0],     
+	"ASAvsSF": [-0.5,-0.4],   
+	"ZSDvsSF": [0.2,0],   
+	"ZSAvsSF":  [0.3,0],    
+	"ASDvsDS": [0.6,0.4],     
+	"ASAvsDS": [0.8,0],     
+	"ZSDvsDS":  [0.1,-0.27],    
+	"ZSAvsDS":  [0.2,-0.06],  
+	"ASDvsASA": [0.4,0],    
+	"ZSDvsASD": [0.5,0.35],     
+	"ZSAvsASD": [0,0.23],   
+	"ZSDvsASA": [0,-0.08],   
+	"ZSAvsASA": [0.5,0.43],  
+	"ZSDvsZSA": [0,0.42]
+    },
+
+	"CorrDist":{
+       
+    "DS": [8,5],           
+	"ASD": [7,3],        
+	"ASA": [5,3],        
+	"SF":[10,6],           
+	"K": [4,0] ,           
+	"ZSA": [4,4] ,        
+	"ZSD": [4,4] 
+
+    },         
+	"DelayScalingParameter":[3.6,3],
+    "XPR":{
+    
+    "Mu": [11,10],              
+	"Sigma":[4,4] 
+    },
+	              
+	"TotalClusters":[15,19],
+	"RaysInCluster": [20,20],  
+	"CDS":[0,0],
+	"CASD":[5,5],
+	"CASA":[8,11],
+	"CZSA":[9,9],
+	"Shadowstd":[6,3],
+    "ZSD":{
+
+    "Mu":[1.02,1.08],
+	"Offset":[0,0]
+     },
+	
+	"fname":"InH_Channel_Env_Parameters"            
+}
+

@@ -45,6 +45,7 @@ func (e *Env) Create(nlinks int, ntx, nrx int) {
 
 	log.Printf("\n Creating %d x %d Links ", ntx, nrx)
 	for i, link := range e.Links {
+		link.ID = i
 		link.BaseParam = e.base
 		link.NTx, link.NRx = ntx, nrx
 		fmt.Printf("\r %d ", i)
@@ -53,41 +54,11 @@ func (e *Env) Create(nlinks int, ntx, nrx int) {
 
 // AttachGenerator attaches the fading generator fg,
 // if clone=true all fading generator has same seed
-func (e *Env) AttachGenerator(fg FadeGenerator, clone bool) {
-	if clone {
-		fmt.Println("Cloning everything from ", fg.State())
-	}
+func (e *Env) AttachGeneratorIID() {
 
-	for i, _ := range e.Links {
-		fmt.Printf("\r %d ", i)
-		// iid := NewGeneratorIID()
-		if !clone {
-			fg.Reset(rand.Uint64())
-		} else {
-			// fmt.Println("Cloning.. ", fg.State())
-		}
-		e.Links[i].generator = fg
-	}
-}
-
-// AttachGenerator attaches the fading generator fg,
-// if clone=true all fading generator has same seed
-func (e *Env) AttachGeneratorIID(fg GeneratorIID, clone bool) {
-	if clone {
-		fmt.Println("Cloning everything from ", fg.State())
-	}
-	var state uint64
 	for i := 0; i < len(e.Links); i++ {
-		iid := NewGeneratorIID()
-		if !clone {
-			state = rand.Uint64()
-			iid.Reset(state)
-		} else {
-			fmt.Println("Cloning.. ", fg.State())
-			iid.Reset(fg.State())
-		}
-		fmt.Printf("\r %d ", i, state)
-
+		state := rand.Uint64()
+		iid := NewGeneratorIID(state)
 		e.Links[i].generator = iid
 	}
 }

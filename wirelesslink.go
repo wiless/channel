@@ -10,6 +10,7 @@ type BaseParam struct {
 }
 
 type WirelessLink struct {
+	ID int
 	BaseParam
 	TxID      int
 	RxID      int
@@ -23,6 +24,8 @@ type WirelessLink struct {
 func (w *WirelessLink) NextSample() complex128 {
 	if w.generator == nil {
 		log.Fatal("Link:No Generator Associated..")
+	} else {
+		// fmt.Printf("\n %d My Generator ", w.ID)
 	}
 	var coeff complex128
 	w.lastTs, coeff = w.generator.NextSample()
@@ -31,4 +34,8 @@ func (w *WirelessLink) NextSample() complex128 {
 
 func (w *WirelessLink) State() uint64 {
 	return w.generator.State()
+}
+
+func (w *WirelessLink) ResetGenerator(id uint64) {
+	w.generator.Reset(id)
 }

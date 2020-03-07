@@ -23,9 +23,9 @@ type GeneratorIID struct {
 	oldstate uint64
 }
 
-func NewGeneratorIID() *GeneratorIID {
+func NewGeneratorIID(seed uint64) *GeneratorIID {
+
 	iid := new(GeneratorIID)
-	seed := rand.Uint64()
 	iid.rndgen = distuv.Normal{Mu: 0, Sigma: 1, Src: rand.NewSource(seed)}
 	iid.state = seed
 	iid.tInterval = 1.0
@@ -39,9 +39,10 @@ func NewGeneratorIID() *GeneratorIID {
 }
 
 func (g *GeneratorIID) Reset(seed uint64) {
-	fmt.Println("Setting ", seed)
+	fmt.Println("Setting State ", seed)
 	g.state = seed
 	g.rndgen.Src.Seed(seed)
+	// fmt.Println("Test.. ", g.rndgen.Rand())
 
 }
 func (g *GeneratorIID) State() uint64 {
