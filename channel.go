@@ -76,3 +76,33 @@ func (e *Env) AttachGeneratorIID() {
 
 	}
 }
+
+// AttachGenerator attaches the fading generator fg,
+// if clone=true all fading generator has same seed
+func (e *Env) AttachGeneratorJakes(fd, Ts float64) {
+	if len(e.Links) == 0 {
+		return
+	}
+
+	for i := 0; i < len(e.Links); i++ {
+		if e.Links[i].IsMIMO() {
+			M, N := e.Links[i].Dims()
+
+			for m := 0; m < M; m++ {
+				for n := 0; n < N; n++ {
+					state := rand.Uint64()
+					jakes := NewGeneratorJakes(state)
+					Ts := 1e-3 // 1ms sampling
+					jakes.Init(7.0, Ts)
+					e.Links[i].genMIMO[m][n] = jakes
+				}
+			}
+
+		} else {
+			state := rand.Uint64()
+			jakes := NewGeneratorJakes(state)
+			e.Links[i].SetGenerator(jakes)
+		}
+
+	}
+}

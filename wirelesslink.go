@@ -88,8 +88,12 @@ func (w *WirelessLink) NextMIMOSample() vlib.MatrixC {
 	res := vlib.NewMatrixC(w.NTx, w.NRx)
 	for i := 0; i < w.NTx; i++ {
 		for j := 0; j < w.NRx; j++ {
-			_, res[i][j] = w.genMIMO[i][j].NextSample()
+			w.lastTs, res[i][j] = w.genMIMO[i][j].NextSample()
 		}
 	}
 	return res
+}
+
+func (w *WirelessLink) LastTsample() float64 {
+	return w.lastTs
 }
