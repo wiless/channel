@@ -1,6 +1,12 @@
 package channel
 
-import "github.com/wiless/vlib"
+import (
+	"fmt"
+
+	"github.com/wiless/vlib"
+)
+
+type MIMOCoeff [][]vlib.VectorC
 
 type TDLChannel struct {
 	genMIMOtdl TDLFadeGenerator
@@ -63,4 +69,16 @@ func (w *TDLChannel) Hmimot(t float64) [][]vlib.VectorC {
 		}
 	}
 	return result
+}
+
+func (H MIMOCoeff) String() string {
+	M := len(H)
+	N := len(H[0])
+	var str string
+	for m := 0; m < M; m++ {
+		for n := 0; n < N; n++ {
+			str += fmt.Sprintf("\n[%d,%d]=%v", m, n, H[m][n])
+		}
+	}
+	return str
 }

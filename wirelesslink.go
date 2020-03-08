@@ -158,7 +158,9 @@ func (w *WirelessLink) SetupSingleTapJakes(fd, Ts float64) {
 
 	w.singlegen = new(SingleTapChannel)
 	w.flatFading = true
+
 	w.singlegen.SetMIMO(w.NTx, w.NRx)
+
 	M, N := w.Dims()
 	w.baseSeed = make([]uint64, M*N)
 
@@ -189,9 +191,8 @@ func (w *WirelessLink) SetupTDLJakes(fd, Ts float64, pdp PDPprofile) {
 	state := rand.Uint64()
 
 	w.cirgen = new(TDLChannel)
-
+	w.cirgen.Setup(pdp, w.NTx, w.NRx, Ts)
 	w.flatFading = false
-	w.cirgen.SetMIMO(w.NTx, w.NRx)
 
 	jakestdl := NewGeneratorTDLJakes(state, w.NTx, w.NRx)
 	jakestdl.Init(fd, Ts)

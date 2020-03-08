@@ -53,14 +53,18 @@ func DoMIMO(env *channel.Env, fd, Ts float64) {
 				x := vlib.RandQPSK(2, 1)
 				_ = x
 				H := link.NextTDLSample()
+				tt[t] = link.LastTsample()
+
+				hh := channel.MIMOCoeff(H)
+				fmt.Printf("\nt=%.2es %v", tt[t], hh)
 				// h := link.NextSample()
 
 				// y := RxSamples(H, x)
 				// _ = idx
 				// _ = y
-				tt[t] = link.LastTsample()
+
 				// hh[t] = cmplx.Abs(H[0][0])
-				fmt.Print(H)
+
 				// fmt.Printf("\nLink (%d) t=%f ", idx, link.LastTsample())
 
 				// fmt.Printf("\nx=%v", x.MatString())
@@ -70,7 +74,7 @@ func DoMIMO(env *channel.Env, fd, Ts float64) {
 		}
 	}
 
-	fmt.Println("t=", tt)
+	fmt.Println("\n t=", tt)
 
 }
 
