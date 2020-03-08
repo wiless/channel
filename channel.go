@@ -72,3 +72,17 @@ func (e *Env) SetupSingleTapJakes(fd, Ts float64) {
 		e.Links[i].SetupSingleTapJakes(fd, Ts)
 	}
 }
+
+// AttachTDLJakesGenerator attaches the fading generator fg,
+// if clone=true all fading generator has same seed
+// Ideally all link may not have same fd and pdp
+func (e *Env) SetupTDLJakes(fd, Ts float64, pdp PDPprofile) {
+
+	if len(e.Links) == 0 {
+		return
+	}
+
+	for i := 0; i < len(e.Links); i++ {
+		e.Links[i].SetupTDLJakes(fd, Ts, pdp)
+	}
+}

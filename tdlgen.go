@@ -1,76 +1,37 @@
 package channel
 
-import (
-	"math"
+import "github.com/wiless/vlib"
 
-	"github.com/wiless/vlib"
-)
-
-type PDPprofile struct {
-	DelayTaus []float64 // delay Tau in seconds
-	Power     []float64 // power in linear
-	Ts        float64   // Tau, if delays are normalized index
-}
-
-/// Normalize the tau with ts interval
-func (p *PDPprofile) Set(ts float64, power float64) {
-	p.DelayTaus = append(p.DelayTaus, ts)
-	p.Power = append(p.Power, power)
-}
-
-/// Normalize the tau with ts interval
-func (p *PDPprofile) Normalize(ts float64) {
-	// find the minimal delta
-
-}
-
-/// NormalizeInterp normalizes through interpolation
-func (p *PDPprofile) NormalizeInterp(ts float64) {
-
-	maxTau := vlib.Max(p.DelayTaus)
-	Ntaps := int(math.Ceil(maxTau / ts))
-	delays := vlib.NewVectorF(Ntaps)
-	powers := vlib.NewVectorF(Ntaps)
-	for n := 0; n < Ntaps; n++ {
-		delays[n] = float64(n) * ts
-	}
-	onebyts := 1.0 / ts
-	for k, v := range p.DelayTaus {
-		tt := delays.Sub(v).Scale(onebyts)
-		newpdp := vlib.SincF(tt).Scale(math.Sqrt(p.Power[k]))
-		powers.PlusEqual(newpdp)
-	}
-	for n := 0; n < Ntaps; n++ {
-		powers[n] = math.Pow(powers[n], 2.0)
-	}
-	//  for k=1:length(x)
-	// plot(newtt,x(k)*sinc((newtt-tt(k))/ts))
-	// newpdp=newpdp+x(k)*sinc((newtt-tt(k))/ts);
-	// end
-
-}
-
-type TDLGenerator struct {
-	genMIMO [][]FadeGenerator
-	NTx     int //number of Tx ports // number of transmitters to be modelled
-	NRx     int //number of Rx ports  //  number of receiving ports to be modelled
-	fres    float64
-	tres    float64
-	profile PDPprofile
+type TDLChannel struct {
+	genMIMOtdl TDLFadeGenerator
+	NTx        int //number of Tx ports // number of transmitters to be modelled
+	NRx        int //number of Rx ports  //  number of receiving ports to be modelled
+	fres       float64
+	tres       float64
+	profile    PDPprofile
+	tInterval  float64
+	t          float64
 }
 
 //Setup sets up the generator with given PDP profile, for a ntx x nrx MIMO system
-func (tdl *TDLGenerator) Setup(pdp PDPprofile, ntx, nrx int) {
-
+func (tdl *TDLChannel) Setup(pdp PDPprofile, ntx, nrx int, Ts float64) {
+	tdl.profile = pdp
+	tdl.tInterval = Ts
+	tdl.SetMIMO(ntx, nrx)
 }
 
-func (w TDLGenerator) Dims() (tx, rx int) {
+func (tdl *TDLChannel) SetMIMO(ntx, nrx int) {
+	tdl.NTx = ntx
+	tdl.NRx = nrx
+}
+
+func (w TDLChannel) Dims() (tx, rx int) {
 
 	return w.NTx, w.NRx
 
 }
 
-func (w TDLGenerator) IsMIMO() bool {
+func (w TDLChannel) IsMIMO() bool {
 	if w.NTx > 1 || w.NRx > 1 {
 		return true
 	} else {
@@ -78,17 +39,28 @@ func (w TDLGenerator) IsMIMO() bool {
 	}
 }
 
-func (w *TDLGenerator) SetMIMO(tx, rx int) {
+//Ht returns a time-domain impulse response of the channel
+func (w *TDLChannel) NextSampleTime() float64 {
+	return w.t + w.tInterval
+}
 
-	w.NTx, w.NRx = tx, rx
-	if tx == 1 && rx == 1 {
-		w.genMIMO = nil
-		return
+//Ht returns a time-domain impulse response of the channel
+func (w *TDLChannel) Ht(t float64, tx, rx int) []complex128 {
+	w.t = t
+	return w.genMIMOtdl.Generate(t, tx, rx)
+}
+
+//Ht returns a time-domain impulse response of the channel
+func (w *TDLChannel) Hmimot(t float64) [][]vlib.VectorC {
+	M, N := w.Dims()
+	w.t = t
+	var result [][]vlib.VectorC
+	result = make([][]vlib.VectorC, M)
+	for m := 0; m < M; m++ {
+		result[m] = make([]vlib.VectorC, N)
+		for n := 0; n < N; n++ {
+			result[m][n] = w.genMIMOtdl.Generate(t, m, n)
+		}
 	}
-	w.genMIMO = make([][]FadeGenerator, tx*rx)
-
-	for i := 0; i < w.NTx; i++ {
-		w.genMIMO[i] = make([]FadeGenerator, rx)
-	}
-
+	return result
 }

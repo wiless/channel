@@ -20,8 +20,8 @@ type WirelessLink struct {
 	RxID       int
 	NTx, NRx   int
 	singlegen  *SingleTapChannel
-	cirgen     *TDLGenerator // always returns a vector for each Tx-Rx pair..
-	lastTs     float64       // recent Timesamples
+	cirgen     *TDLChannel // always returns a vector for each Tx-Rx pair..
+	lastTs     float64     // recent Timesamples
 	flatFading bool
 }
 
@@ -40,12 +40,31 @@ func (w *WirelessLink) SetFlatFading(stc *SingleTapChannel) {
 func (w *WirelessLink) NextSample() complex128 {
 
 	if !w.IsFlatFading() {
-		log.Fatal("MIMO Link:Call NextMIMOSample() instead")
+		log.Fatal("Not a Flat Fading Channel")
 		return complex(0, 0)
+	} else {
+		if w.IsMIMO() {
+			log.Fatal("Not a SISO Flat Fading Channel, call NextMIMOSample()")
+			return complex(0, 0)
+		} else {
+			var coeff complex128
+			w.lastTs, coeff = w.singlegen.NextSample()
+			return coeff
+		}
 	}
-	var coeff complex128
-	w.lastTs, coeff = w.singlegen.NextSample()
-	return coeff
+
+}
+
+func (w *WirelessLink) NextTDLSample() [][]vlib.VectorC {
+
+	if w.IsFlatFading() {
+		log.Fatal("Not a TDL Fading Channel")
+		return make([][]vlib.VectorC, 0)
+	} else {
+		w.lastTs = w.cirgen.NextSampleTime()
+		coeff := w.cirgen.Hmimot(w.lastTs)
+		return coeff
+	}
 
 }
 
@@ -62,7 +81,6 @@ func (w *WirelessLink) SetMIMO(tx, rx int) {
 	if w.IsFlatFading() && w.singlegen != nil {
 		w.singlegen.SetMIMO(tx, rx)
 	}
-
 	if !w.IsFlatFading() && w.cirgen != nil {
 		w.cirgen.SetMIMO(tx, rx)
 	}
@@ -79,8 +97,6 @@ func (w WirelessLink) IsMIMO() bool {
 }
 func (w WirelessLink) Dims() (tx, rx int) {
 
-	return w.singlegen.Dims()
-
 	if w.IsFlatFading() {
 		return w.singlegen.Dims()
 	} else {
@@ -94,10 +110,16 @@ func (w *WirelessLink) H(t float64) vlib.MatrixC {
 	return w.NextMIMOSample()
 }
 func (w *WirelessLink) NextMIMOSample() vlib.MatrixC {
+	if w.IsFlatFading() {
+		var H vlib.MatrixC
+		w.lastTs, H = w.singlegen.NextMIMOSample()
+		return H
+	}
 
-	var H vlib.MatrixC
-	w.lastTs, H = w.singlegen.NextMIMOSample()
-	return H
+	log.Panicf("Not a Flat Fading Channel, Call appropriate Generator")
+
+	return vlib.NewMatrixC(0, 0)
+
 }
 
 func (w *WirelessLink) LastTsample() float64 {
@@ -158,5 +180,22 @@ func (w *WirelessLink) SetupSingleTapJakes(fd, Ts float64) {
 		jakes.Init(fd, Ts)
 		w.singlegen.generator = jakes
 	}
+
+}
+
+// AttachGenerator attaches the fading generator fg,
+// if clone=true all fading generator has same seed
+func (w *WirelessLink) SetupTDLJakes(fd, Ts float64, pdp PDPprofile) {
+	state := rand.Uint64()
+
+	w.cirgen = new(TDLChannel)
+
+	w.flatFading = false
+	w.cirgen.SetMIMO(w.NTx, w.NRx)
+
+	jakestdl := NewGeneratorTDLJakes(state, w.NTx, w.NRx)
+	jakestdl.Init(fd, Ts)
+	jakestdl.CreateTaps(pdp.Power)
+	w.cirgen.genMIMOtdl = jakestdl
 
 }
