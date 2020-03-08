@@ -1,6 +1,7 @@
 package channel
 
 import (
+	"fmt"
 	"math"
 
 	"golang.org/x/exp/rand"
@@ -44,13 +45,12 @@ func NewGeneratorJakes(seed uint64) *GeneratorJakes {
 	return iid
 }
 func (g *GeneratorJakes) Init(fdopplerHz float64, tinterval float64) {
-	g.N = 20
+
 	g.fd = fdopplerHz
 	g.tInterval = tinterval
 }
 func (g *GeneratorJakes) Reset(seed uint64) {
 	// fmt.Println("Setting State ", seed)
-	g.N = 20
 	g.state = seed
 	g.rndgen.Src.Seed(seed)
 	g.alpham = g.rndgen.Rand()
@@ -87,15 +87,53 @@ func (g *GeneratorJakes) GenerateN(tstart, tinterval float64, N int) []complex12
 	return result
 }
 
-func (g *GeneratorJakes) generate(t float64) complex128 {
+func (g *GeneratorJakes) generate1(t float64) complex128 {
 	g.lastSampletime = t
 	twopi := 2 * math.Pi
 	var re, im float64
-	for n := 0; n < g.N; n++ {
+	// g.alpham = g.rndgen.Rand()
+	M := float64(g.N)
+	M = 30
+	for m := 1.0; m <= 30; m++ {
 		am := g.rndgen.Rand()
 		bm := g.rndgen.Rand()
-		re += math.Cos(twopi*math.Cos(g.alpham)*g.fd*t + am)
-		im += math.Sin(twopi*math.Cos(g.alpham)*g.fd*t + bm)
+		theta := g.rndgen.Rand()
+
+		term1 := (math.Pi*(2*m-1) + theta) / (4 * M)
+		fmt.Printf("\n %v [ %v %v %v] %v", m, theta, am, bm, math.Cos(term1))
+		re += math.Cos(twopi*g.fd*math.Cos(term1)*t + am)
+		im += math.Sin(twopi*g.fd*math.Cos(term1)*t + bm)
 	}
+	Scale := 1.0 / math.Sqrt(M)
+	re = re * Scale
+	im = im * Scale
 	return complex(re, im)
+}
+
+func (g *GeneratorJakes) generate(t float64) complex128 {
+	g.lastSampletime = t
+	twopi := 2 * math.Pi
+
+	// g.alpham = g.rndgen.Rand()
+	M := float64(g.N)
+	M = 30
+	fd := g.fd
+	var cos = math.Cos
+	var sin = math.Sin
+	// var sqrt = math.Sqrt
+	var r complex128
+	theta := g.alpham // 0.0 // A random phase for each generator
+	for m := 1.0; m <= 30; m++ {
+
+		betham := math.Pi * m / (M + 1)
+		alpha := 0.0
+		alpham := math.Pi * (m - .5) / (2 * M)
+		Am := complex(cos(betham), sin(betham))
+		Bm := complex(cos(alpha), sin(alpha))
+		fn := fd * cos(alpham)
+		r += Am*complex(cos(twopi*fn*t+theta), 0) + 0.707*Bm*complex(cos(twopi*fd*t), 0)
+	}
+	Scale := 2.8284 // 2*sqrt(2)
+	r = r * complex(Scale, 0)
+	return r
 }

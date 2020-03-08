@@ -85,6 +85,9 @@ func (w *WirelessLink) H(t float64) vlib.MatrixC {
 	return w.NextMIMOSample()
 }
 func (w *WirelessLink) NextMIMOSample() vlib.MatrixC {
+	if !w.IsMIMO() {
+		log.Panic("Link is not MIMO ")
+	}
 	res := vlib.NewMatrixC(w.NTx, w.NRx)
 	for i := 0; i < w.NTx; i++ {
 		for j := 0; j < w.NRx; j++ {

@@ -92,8 +92,7 @@ func (e *Env) AttachGeneratorJakes(fd, Ts float64) {
 				for n := 0; n < N; n++ {
 					state := rand.Uint64()
 					jakes := NewGeneratorJakes(state)
-					Ts := 1e-3 // 1ms sampling
-					jakes.Init(7.0, Ts)
+					jakes.Init(fd, Ts)
 					e.Links[i].genMIMO[m][n] = jakes
 				}
 			}
@@ -101,6 +100,7 @@ func (e *Env) AttachGeneratorJakes(fd, Ts float64) {
 		} else {
 			state := rand.Uint64()
 			jakes := NewGeneratorJakes(state)
+			jakes.Init(fd, Ts)
 			e.Links[i].SetGenerator(jakes)
 		}
 

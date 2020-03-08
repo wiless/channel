@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
+	"math/cmplx"
 	"math/rand"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/wiless/channel"
 	"github.com/wiless/vlib"
 )
@@ -12,9 +14,14 @@ import (
 func main() {
 	// Reset the seed
 	rand.Seed(time.Now().UnixNano())
+	fcGHz := 0.700
 
+	speedkmph := 30.0 // walking speed
+	fd := channel.DopplerHz(speedkmph, fcGHz)
+	Ts := 1e-4
+	log.Infof("Doppler (Hz) %4.3fHz", fd)
 	env := channel.NewSimpleEnv()
-	env.Setup(0.700, 10) // fc=700MHz, Bw=10Mhz
+	env.Setup(fcGHz, 10) // fc=700MHz, Bw=10Mhz
 
 	// // SISO example
 	// env.Create(3, 1, 1)
@@ -35,25 +42,46 @@ func main() {
 	env.Create(1, 2, 2)
 
 	// Example to set all links to an i.i.d generator
-	env.AttachGeneratorJakes(10, 1e-3)
+	env.AttachGeneratorJakes(fd, Ts)
 
 	x := make([]complex128, 2)
 	x[0] = complex(1, 0)
 	x[1] = complex(2, 0)
-	for idx, link := range env.Links {
-		for t := 0.0; t < 15; t++ {
+	N := 1000
+	hh := vlib.NewVectorF(N)
+	hh2 := vlib.NewVectorF(N)
+	tt := vlib.NewVectorF(N)
+
+	for _, link := range env.Links {
+		for t := 0; t < N; t++ {
 			{
 
 				x := vlib.RandQPSK(2, 1)
+				_ = x
 				H := link.NextMIMOSample()
-				y := RxSamples(H, x)
-				fmt.Printf("\n\n\nLink (%d) t=%f ", idx, link.LastTsample())
-				fmt.Printf("\nx=%v", x.MatString())
-				fmt.Printf("\nH=%v", H.MatString())
-				fmt.Printf("\ny=%v", y.MatString())
+				// h := link.NextSample()
+
+				// y := RxSamples(H, x)
+				// _ = idx
+				// _ = y
+				tt[t] = link.LastTsample()
+				hh[t] = cmplx.Abs(H[0][0])
+				// hh[t] = cmplx.Abs(h)
+				hh2[t] = cmplx.Abs(H[0][1])
+				// fmt.Println(link.LastTsample(), H[0][0])
+				// fmt.Printf("\nLink (%d) t=%f ", idx, link.LastTsample())
+
+				// fmt.Printf("\nx=%v", x.MatString())
+				// fmt.Printf("\nH=%v", H.MatString())
+				// fmt.Printf("\ny=%v", y.MatString())
 			}
 		}
 	}
+
+	fmt.Println("t=", tt)
+	fmt.Println("h1=", hh)
+	fmt.Println("h2=", hh)
+
 }
 
 // RxSamples Returns y=H*x
