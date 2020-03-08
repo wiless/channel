@@ -7,6 +7,10 @@ import (
 	"golang.org/x/exp/rand"
 )
 
+func init() {
+	// rand.Seed(uint64(time.Now().UnixNano()))
+}
+
 type BaseParam struct {
 	FcGHz float64 // Carrier Frequency
 	BWMHz float64 // Bandwidth of channel used for modelling

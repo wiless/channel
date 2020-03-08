@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/cmplx"
 	"math/rand"
 	"time"
 
@@ -41,12 +42,16 @@ func DoMIMO(env *channel.Env, fd, Ts float64) {
 	x := make([]complex128, 2)
 	x[0] = complex(1, 0)
 	x[1] = complex(2, 0)
-	N := 4 // 100 samples
-	// hh := vlib.NewVectorF(N)
-	// hh2 := vlib.NewVectorF(N)
-	tt := vlib.NewVectorF(N)
+	N := 30 // 100 samples
 
-	for _, link := range env.Links {
+	tt := vlib.NewVectorF(N)
+	// test the four taps of 0,0 - MIMO link
+	hh0 := vlib.NewVectorF(N)
+	hh1 := vlib.NewVectorF(N)
+	hh2 := vlib.NewVectorF(N)
+	hh3 := vlib.NewVectorF(N)
+
+	for l, link := range env.Links {
 		for t := 0; t < N; t++ {
 			{
 
@@ -57,6 +62,12 @@ func DoMIMO(env *channel.Env, fd, Ts float64) {
 
 				hh := channel.MIMOCoeff(H)
 				fmt.Printf("\nt=%.2es %v", tt[t], hh)
+				if l == 0 { // only for the first link
+					hh0[t] = cmplx.Abs(hh[0][0][0]) // 1st tap
+					hh1[t] = cmplx.Abs(hh[0][0][1]) // 1st tap
+					hh2[t] = cmplx.Abs(hh[0][0][2]) // 1st tap
+					hh3[t] = cmplx.Abs(hh[0][0][3]) // 1st tap
+				}
 				// h := link.NextSample()
 
 				// y := RxSamples(H, x)
@@ -75,6 +86,10 @@ func DoMIMO(env *channel.Env, fd, Ts float64) {
 	}
 
 	fmt.Println("\n t=", tt)
+	fmt.Println("\n h0=", hh0)
+	fmt.Println("\n h1=", hh1)
+	fmt.Println("\n h2=", hh2)
+	fmt.Println("\n h3=", hh3)
 
 }
 

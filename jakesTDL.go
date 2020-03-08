@@ -141,11 +141,13 @@ func (g *GeneratorTDLJakes) generate(t float64, tx, rx int) []complex128 {
 	var sin = math.Sin
 	// var sqrt = math.Sqrt
 	cir := vlib.NewVectorC(g.nTaps)
-	Scale := 2.8284 // 2*sqrt(2)
+	// Scale := 2.8284 / math.Sqrt(2*M) // 2*sqrt(2)
+	Scale := 1.0 / math.Sqrt(2*M) // 2*sqrt(2)
 
 	for tap := 0; tap < g.nTaps; tap++ {
 		var r complex128
 		theta := g.alpham[tx][rx][tap] // 0.0 // A random phase for each generator
+		// fmt.Printf("\n %v [%d,%d] %v", t, tx, rx, theta)
 		for m := 1.0; m <= M; m++ {
 			betham := math.Pi * m / (M + 1)
 			alpha := 0.0
