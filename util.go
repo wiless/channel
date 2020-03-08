@@ -1,6 +1,8 @@
 package channel
 
-import "gonum.org/v1/gonum/unit/constant"
+import (
+	"gonum.org/v1/gonum/unit/constant"
+)
 
 // DopplerHz returns the doppler frequency for the velocity v
 // fd=v/Lamda

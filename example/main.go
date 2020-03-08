@@ -16,26 +16,36 @@ func main() {
 	env := channel.NewSimpleEnv()
 	env.Setup(0.700, 10) // fc=700MHz, Bw=10Mhz
 
-	// // SISO example
-	// env.Create(3, 1, 1)
-
-	// // Example to set all links to an i.i.d generator
-	// env.AttachGeneratorIID()
-	// for idx, link := range env.Links {
-	// 	for t := 0.0; t < 5; t++ {
-	// 		{
-	// 			fmt.Printf("\nLink (%d) t=%f : %v", idx, t, link.NextSample())
-	// 		}
-	// 	}
-	// }
+	DoMIMO(env)
 
 	fmt.Println()
 
+}
+
+func DoSISO(env *channel.Env) {
+
+	// SISO example
+	env.Create(5, 1, 1)
+	// Example to set all links to an i.i.d generator
+	env.SetupSingleTapIID()
+	for idx, link := range env.Links {
+		fmt.Println("\nLink Time coeff")
+		for t := 0.0; t < 5; t++ {
+
+			h := link.NextSample()
+			fmt.Printf("%d %f %v\n", idx, link.LastTsample(), h)
+
+		}
+	}
+
+}
+
+func DoMIMO(env *channel.Env) {
 	// MIMO example
 	env.Create(5, 2, 2)
 
 	// Example to set all links to an i.i.d generator
-	env.AttachGeneratorIID()
+	env.SetupSingleTapIID() // AttachGeneratorIID()
 	x := make([]complex128, 2)
 	x[0] = complex(1, 0)
 	x[1] = complex(2, 0)

@@ -27,7 +27,6 @@ func NewGeneratorIID(seed uint64) *GeneratorIID {
 	iid.state = seed
 	iid.tInterval = 1.0
 	iid.lastSampletime = 0
-	// logrus.Infof("Created Seed %v |  %v", iid.rndgen.Src.Uint64(), seed)
 	// distuv.Normal{
 	// 	Mu:    0,
 	// 	Sigma: 1.0,

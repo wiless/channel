@@ -4,7 +4,6 @@ package channel
 
 import (
 	"log"
-	"math/rand"
 )
 
 // Stores the wireless environment related paramters
@@ -52,57 +51,24 @@ func (e *Env) Create(nlinks int, ntx, nrx int) {
 
 // AttachGenerator attaches the fading generator fg,
 // if clone=true all fading generator has same seed
-func (e *Env) AttachGeneratorIID() {
+func (e *Env) SetupSingleTapIID() {
 	if len(e.Links) == 0 {
 		return
 	}
-
 	for i := 0; i < len(e.Links); i++ {
-		if e.Links[i].IsMIMO() {
-			M, N := e.Links[i].Dims()
-
-			for m := 0; m < M; m++ {
-				for n := 0; n < N; n++ {
-					state := rand.Uint64()
-					e.Links[i].genMIMO[m][n] = NewGeneratorIID(state)
-				}
-			}
-
-		} else {
-			state := rand.Uint64()
-			iid := NewGeneratorIID(state)
-			e.Links[i].SetGenerator(iid)
-		}
-
+		e.Links[i].SetupSingleTapIID()
 	}
 }
 
 // AttachGenerator attaches the fading generator fg,
 // if clone=true all fading generator has same seed
-func (e *Env) AttachGeneratorJakes(fd, Ts float64) {
+// Ideally all link may not have same fd
+func (e *Env) SetupSingleTapJakes(fd, Ts float64) {
 	if len(e.Links) == 0 {
 		return
 	}
 
 	for i := 0; i < len(e.Links); i++ {
-		if e.Links[i].IsMIMO() {
-			M, N := e.Links[i].Dims()
-
-			for m := 0; m < M; m++ {
-				for n := 0; n < N; n++ {
-					state := rand.Uint64()
-					jakes := NewGeneratorJakes(state)
-					jakes.Init(fd, Ts)
-					e.Links[i].genMIMO[m][n] = jakes
-				}
-			}
-
-		} else {
-			state := rand.Uint64()
-			jakes := NewGeneratorJakes(state)
-			jakes.Init(fd, Ts)
-			e.Links[i].SetGenerator(jakes)
-		}
-
+		e.Links[i].SetupSingleTapJakes(fd, Ts)
 	}
 }

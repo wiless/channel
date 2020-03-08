@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/wiless/vlib"
+	"golang.org/x/exp/rand"
 )
 
 type BaseParam struct {
@@ -12,51 +13,58 @@ type BaseParam struct {
 }
 
 type WirelessLink struct {
-	ID int
+	ID       int
+	baseSeed []uint64
 	BaseParam
-	TxID      int
-	RxID      int
-	NTx       int //number of Tx ports // number of transmitters to be modelled
-	NRx       int //number of Rx ports  //  number of receiving ports to be modelled
-	generator FadeGenerator
-	genMIMO   [][]FadeGenerator
-	lastTs    float64 // recent Timesamples
+	TxID       int
+	RxID       int
+	NTx, NRx   int
+	singlegen  *SingleTapChannel
+	cirgen     *TDLGenerator // always returns a vector for each Tx-Rx pair..
+	lastTs     float64       // recent Timesamples
+	flatFading bool
+}
 
+func (w WirelessLink) IsFlatFading() bool {
+	return w.flatFading
+}
+
+func (w *WirelessLink) SetFlatFading(stc *SingleTapChannel) {
+	if stc == nil {
+		w.flatFading = false
+		w.singlegen = nil
+	}
+	w.singlegen = stc
 }
 
 func (w *WirelessLink) NextSample() complex128 {
-	if w.generator == nil {
-		if w.IsMIMO() {
-			log.Fatal("MIMO Link:Call NextMIMOSample() instead")
-			return complex(0, 0)
-		}
-		log.Fatal("Link:No Generator Associated..")
-	} else {
-		// fmt.Printf("\n %d My Generator ", w.ID)
+
+	if !w.IsFlatFading() {
+		log.Fatal("MIMO Link:Call NextMIMOSample() instead")
+		return complex(0, 0)
 	}
 	var coeff complex128
-	w.lastTs, coeff = w.generator.NextSample()
+	w.lastTs, coeff = w.singlegen.NextSample()
 	return coeff
+
 }
 
-func (w *WirelessLink) State() uint64 {
-	return w.generator.State()
+func (w *WirelessLink) State() []uint64 {
+	return w.baseSeed
 }
 
-func (w *WirelessLink) ResetGenerator(id uint64) {
-	w.generator.Reset(id)
-}
+// func (w *WirelessLink) ResetGenerator(id uint64) {
+// 	w.generator.Reset(id)
+// }
 func (w *WirelessLink) SetMIMO(tx, rx int) {
-
-	w.NTx, w.NRx = tx, rx
-	if tx == 1 && rx == 1 {
-		w.genMIMO = nil
-		return
+	w.NTx = tx
+	w.NRx = rx
+	if w.IsFlatFading() && w.singlegen != nil {
+		w.singlegen.SetMIMO(tx, rx)
 	}
-	w.genMIMO = make([][]FadeGenerator, tx*rx)
-	w.generator = nil
-	for i := 0; i < w.NTx; i++ {
-		w.genMIMO[i] = make([]FadeGenerator, rx)
+
+	if !w.IsFlatFading() && w.cirgen != nil {
+		w.cirgen.SetMIMO(tx, rx)
 	}
 
 }
@@ -67,36 +75,88 @@ func (w WirelessLink) IsMIMO() bool {
 	} else {
 		return false
 	}
+
 }
 func (w WirelessLink) Dims() (tx, rx int) {
-	return w.NTx, w.NRx
-}
-func (w *WirelessLink) SetGenerator(gen FadeGenerator) {
 
-	if w.NTx > 1 || w.NRx > 1 {
-		log.Fatal("Link is MIMO, Initialize MIMO Generator")
-		return
+	return w.singlegen.Dims()
+
+	if w.IsFlatFading() {
+		return w.singlegen.Dims()
+	} else {
+		// return w.cirgen.IsMIMO()
+		return w.cirgen.Dims()
 	}
-	w.genMIMO = nil
-	w.generator = gen
+
 }
 
 func (w *WirelessLink) H(t float64) vlib.MatrixC {
 	return w.NextMIMOSample()
 }
 func (w *WirelessLink) NextMIMOSample() vlib.MatrixC {
-	if !w.IsMIMO() {
-		log.Panic("Link is not MIMO ")
-	}
-	res := vlib.NewMatrixC(w.NTx, w.NRx)
-	for i := 0; i < w.NTx; i++ {
-		for j := 0; j < w.NRx; j++ {
-			w.lastTs, res[i][j] = w.genMIMO[i][j].NextSample()
-		}
-	}
-	return res
+
+	var H vlib.MatrixC
+	w.lastTs, H = w.singlegen.NextMIMOSample()
+	return H
 }
 
 func (w *WirelessLink) LastTsample() float64 {
 	return w.lastTs
+}
+
+func (w *WirelessLink) SetupSingleTapIID() {
+
+	w.singlegen = new(SingleTapChannel)
+	w.flatFading = true
+	w.singlegen.SetMIMO(w.NTx, w.NRx)
+	M, N := w.Dims()
+	w.baseSeed = make([]uint64, M*N)
+
+	if w.IsMIMO() {
+
+		for m := 0; m < M; m++ {
+			for n := 0; n < N; n++ {
+				state := rand.Uint64()
+				w.baseSeed[m*N+n] = state
+				w.singlegen.genMIMO[m][n] = NewGeneratorIID(state)
+			}
+		}
+
+	} else {
+		state := rand.Uint64()
+		iid := NewGeneratorIID(state)
+		w.singlegen.generator = iid // NewGeneratorIID(state)
+	}
+
+}
+
+// AttachGenerator attaches the fading generator fg,
+// if clone=true all fading generator has same seed
+func (w *WirelessLink) SetupSingleTapJakes(fd, Ts float64) {
+	M, N := w.Dims()
+	w.baseSeed = make([]uint64, M*N)
+
+	w.singlegen = new(SingleTapChannel)
+	w.flatFading = true
+	w.singlegen.SetMIMO(w.NTx, w.NRx)
+
+	if w.IsMIMO() {
+		for m := 0; m < M; m++ {
+			for n := 0; n < N; n++ {
+				state := rand.Uint64()
+				w.baseSeed[m*N+n] = state
+				jakes := NewGeneratorJakes(state)
+				jakes.Init(fd, Ts)
+				w.singlegen.genMIMO[m][n] = jakes
+			}
+		}
+
+	} else {
+		state := rand.Uint64()
+		w.baseSeed[0] = state
+		jakes := NewGeneratorJakes(state)
+		jakes.Init(fd, Ts)
+		w.singlegen.generator = jakes
+	}
+
 }
