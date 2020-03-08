@@ -133,12 +133,12 @@ func (w *WirelessLink) SetupSingleTapIID() {
 // AttachGenerator attaches the fading generator fg,
 // if clone=true all fading generator has same seed
 func (w *WirelessLink) SetupSingleTapJakes(fd, Ts float64) {
-	M, N := w.Dims()
-	w.baseSeed = make([]uint64, M*N)
 
 	w.singlegen = new(SingleTapChannel)
 	w.flatFading = true
 	w.singlegen.SetMIMO(w.NTx, w.NRx)
+	M, N := w.Dims()
+	w.baseSeed = make([]uint64, M*N)
 
 	if w.IsMIMO() {
 		for m := 0; m < M; m++ {
