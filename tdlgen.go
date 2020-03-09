@@ -19,6 +19,10 @@ type TDLChannel struct {
 	t          float64
 }
 
+func (tdl *TDLChannel) SetGenerator(tdlgen TDLFadeGenerator) {
+	tdl.genMIMOtdl = tdlgen
+}
+
 //Setup sets up the generator with given PDP profile, for a ntx x nrx MIMO system
 func (tdl *TDLChannel) Setup(pdp PDPprofile, ntx, nrx int, Ts float64) {
 	tdl.profile = pdp

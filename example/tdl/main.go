@@ -14,7 +14,7 @@ import (
 func main() {
 	// Reset the seed
 	rand.Seed(time.Now().UnixNano())
-	fcGHz := 0.700
+	fcGHz := 3.500
 
 	speedkmph := 30.0 // walking speed
 	fd := channel.DopplerHz(speedkmph, fcGHz)
@@ -42,7 +42,7 @@ func DoMIMO(env *channel.Env, fd, Ts float64) {
 	x := make([]complex128, 2)
 	x[0] = complex(1, 0)
 	x[1] = complex(2, 0)
-	N := 30 // 100 samples
+	N := 500 // 100 samples
 
 	tt := vlib.NewVectorF(N)
 	// test the four taps of 0,0 - MIMO link
@@ -61,7 +61,8 @@ func DoMIMO(env *channel.Env, fd, Ts float64) {
 				tt[t] = link.LastTsample()
 
 				hh := channel.MIMOCoeff(H)
-				fmt.Printf("\nt=%.2es %v", tt[t], hh)
+				_ = hh
+				// fmt.Printf("\nt=%.2es %v", tt[t], hh)
 				if l == 0 { // only for the first link
 					hh0[t] = cmplx.Abs(hh[0][0][0]) // 1st tap
 					hh1[t] = cmplx.Abs(hh[0][0][1]) // 1st tap
@@ -85,11 +86,11 @@ func DoMIMO(env *channel.Env, fd, Ts float64) {
 		}
 	}
 
-	fmt.Println("\n t=", tt)
-	fmt.Println("\n h0=", hh0)
-	fmt.Println("\n h1=", hh1)
-	fmt.Println("\n h2=", hh2)
-	fmt.Println("\n h3=", hh3)
+	fmt.Println("\nt=", tt)
+	fmt.Println("\nh0=", hh0)
+	fmt.Println("\nh1=", hh1)
+	fmt.Println("\nh2=", hh2)
+	fmt.Println("\nh3=", hh3)
 
 }
 

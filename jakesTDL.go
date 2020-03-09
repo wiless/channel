@@ -47,7 +47,7 @@ func NewGeneratorTDLJakes(seed uint64, nTx, nRx int) *GeneratorTDLJakes {
 
 	jakes.tInterval = 0
 	jakes.lastSampletime = 0
-	jakes.N = 20
+	jakes.N = 18
 	jakes.fd = 0
 	jakes.nTaps = 0
 	return jakes
@@ -129,13 +129,15 @@ func (g *GeneratorTDLJakes) GenerateN(tstart, tinterval float64, N int, tx, rx i
 	return result
 }
 
+// generate implements based on
+// https://en.wikipedia.org/wiki/Rayleigh_fading#Jakes's_model
 func (g *GeneratorTDLJakes) generate(t float64, tx, rx int) []complex128 {
 	g.lastSampletime = t
 	twopi := 2 * math.Pi
 
 	// g.alpham = g.rndgen.Rand()
 	M := float64(g.N)
-	M = 30
+
 	fd := g.fd
 	var cos = math.Cos
 	var sin = math.Sin
@@ -151,9 +153,17 @@ func (g *GeneratorTDLJakes) generate(t float64, tx, rx int) []complex128 {
 		for m := 1.0; m <= M; m++ {
 			betham := math.Pi * m / (M + 1)
 			alpha := 0.0
+
+			// // modified Jakes (see wiki)
+			// alpha = math.Pi * (m - 0.5) / (2 * M)
+			// betham = math.Pi * m / (M)
+			// theta = g.alpham[tx][rx][tap] + betham + twopi*(float64(tap-1))/(M+1)
+			theta = g.alpham[tx][rx][tap] + twopi*(float64(tap-1))/(M+1)
+
 			alpham := math.Pi * (m - .5) / (2 * M)
 			Am := complex(cos(betham), sin(betham))
 			Bm := complex(cos(alpha), sin(alpha))
+
 			fn := fd * cos(alpham)
 			r += Am*complex(cos(twopi*fn*t+theta), 0) + 0.707*Bm*complex(cos(twopi*fd*t), 0)
 		}

@@ -86,3 +86,9 @@ func (e *Env) SetupTDLJakes(fd, Ts float64, pdp PDPprofile) {
 		e.Links[i].SetupTDLJakes(fd, Ts, pdp)
 	}
 }
+
+type ChLinkInfo struct {
+	LOS      bool
+	Indoor   bool
+	Velocity float64
+}

@@ -2,13 +2,14 @@ package channel
 
 import (
 	"log"
+	"time"
 
 	"github.com/wiless/vlib"
 	"golang.org/x/exp/rand"
 )
 
 func init() {
-	// rand.Seed(uint64(time.Now().UnixNano()))
+	rand.Seed(uint64(time.Now().UnixNano()))
 }
 
 type BaseParam struct {
@@ -27,6 +28,7 @@ type WirelessLink struct {
 	cirgen     *TDLChannel // always returns a vector for each Tx-Rx pair..
 	lastTs     float64     // recent Timesamples
 	flatFading bool
+	ready      bool
 }
 
 func (w WirelessLink) IsFlatFading() bool {
@@ -65,9 +67,15 @@ func (w *WirelessLink) NextTDLSample() [][]vlib.VectorC {
 		log.Fatal("Not a TDL Fading Channel")
 		return make([][]vlib.VectorC, 0)
 	} else {
-		w.lastTs = w.cirgen.NextSampleTime()
-		coeff := w.cirgen.Hmimot(w.lastTs)
-		return coeff
+		if w.ready {
+			w.lastTs = w.cirgen.NextSampleTime()
+			coeff := w.cirgen.Hmimot(w.lastTs)
+			return coeff
+		} else {
+			log.Fatal("Seems No Generator attached to the TDLChannel")
+			return make([][]vlib.VectorC, 0)
+		}
+
 	}
 
 }
@@ -202,5 +210,22 @@ func (w *WirelessLink) SetupTDLJakes(fd, Ts float64, pdp PDPprofile) {
 	jakestdl.Init(fd, Ts)
 	jakestdl.CreateTaps(pdp.Power)
 	w.cirgen.genMIMOtdl = jakestdl
+
+}
+
+// AttachGenerator attaches the fading generator fg,
+func (w *WirelessLink) AttachM2412(m2412tdl *TDLChannel) {
+	state := rand.Uint64()
+	w.baseSeed = []uint64{state}
+	w.cirgen = m2412tdl
+	w.flatFading = false
+
+	if w.cirgen.genMIMOtdl != nil {
+		w.ready = true
+	}
+	// jakestdl := NewGeneratorTDLJakes(state, w.NTx, w.NRx)
+	// jakestdl.Init(fd, Ts)
+	// jakestdl.CreateTaps(pdp.Power)
+	// w.cirgen.genMIMOtdl = m2412gen
 
 }
