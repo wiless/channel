@@ -86,3 +86,16 @@ func (H MIMOCoeff) String() string {
 	}
 	return str
 }
+
+func (H *MIMOCoeff) ReSize(tx, rx, NTaps int) {
+
+	H = new(MIMOCoeff)
+	tmp := MIMOCoeff(make([][]vlib.VectorC, tx))
+	for m := 0; m < tx; m++ {
+		tmp[m] = make([]vlib.VectorC, rx)
+		for n := 0; n < rx; n++ {
+			tmp[m][n] = vlib.NewVectorC(NTaps)
+		}
+	}
+	H = &tmp
+}
