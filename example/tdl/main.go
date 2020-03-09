@@ -42,7 +42,7 @@ func DoMIMO(env *channel.Env, fd, Ts float64) {
 	x := make([]complex128, 2)
 	x[0] = complex(1, 0)
 	x[1] = complex(2, 0)
-	N := 500 // 100 samples
+	N := 10 // 100 samples
 
 	tt := vlib.NewVectorF(N)
 	// test the four taps of 0,0 - MIMO link
@@ -62,7 +62,7 @@ func DoMIMO(env *channel.Env, fd, Ts float64) {
 
 				hh := channel.MIMOCoeff(H)
 				_ = hh
-				// fmt.Printf("\nt=%.2es %v", tt[t], hh)
+				fmt.Printf("\nt=%.2es %v", tt[t], hh)
 				if l == 0 { // only for the first link
 					hh0[t] = cmplx.Abs(hh[0][0][0]) // 1st tap
 					hh1[t] = cmplx.Abs(hh[0][0][1]) // 1st tap
