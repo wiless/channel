@@ -12,8 +12,8 @@ import (
 )
 
 //SetDefaults loads the default values for the simulation
-func DefaultEnv() TestEnvironment {
-	var i TestEnvironment
+func (i *TestEnvironment) DefaultEnv() {
+
 	i.ENV = "RMa"
 	i.DS.Mu = []float64{-7.49, 7.43, -7.47}
 	i.DS.Sigma = []float64{0.55, 0.48, 0.24}
@@ -67,7 +67,6 @@ func DefaultEnv() TestEnvironment {
 	i.ZSD.Mu = []float64{0, 0}
 	i.ZSD.Offset = []float64{0, 0}
 
-	return i
 }
 
 // Loads the test environment form a file..

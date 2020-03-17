@@ -18,7 +18,7 @@ type Env struct {
 // NewChannel creates a Default Envinronment
 func NewEnv() *Env {
 	env := new(Env)
-	env.EnvParams = DefaultEnv()
+	env.EnvParams.DefaultEnv()
 	env.EnvParams.Initialize()
 	return env
 }
@@ -26,7 +26,7 @@ func NewEnv() *Env {
 // NewSimpleEnv creates a Default Rural based Wireless Channel Env, with single Tx-Rx links, with IID generator
 func NewSimpleEnv() *Env {
 	env := new(Env)
-	env.EnvParams = DefaultEnv()
+	env.EnvParams.DefaultEnv()
 	env.EnvParams.Initialize()
 	return env
 }
