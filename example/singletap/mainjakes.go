@@ -6,7 +6,7 @@ import (
 	"math/rand"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/wiless/channel"
 	"github.com/wiless/vlib"
 )
