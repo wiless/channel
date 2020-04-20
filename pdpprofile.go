@@ -55,11 +55,13 @@ func (p *PDPprofile) CreateUPower(nTaps int, Ts float64) {
 	p.Ts = Ts
 }
 
-/// NormalizeInterp normalizes through interpolation
-func (p *PDPprofile) NormalizeInterp(ts float64) {
+/// NormalizeInterp normalizes through interpolation ts in Seconds
+func (p PDPprofile) NormalizeInterp(ts float64) PDPprofile {
+	var newpdp PDPprofile
+	newpdp.Ts = ts
 
 	maxTau := vlib.Max(p.DelayTaus)
-	Ntaps := int(math.Ceil(maxTau / ts))
+	Ntaps := int(math.Ceil(maxTau/ts)) + 1
 	delays := vlib.NewVectorF(Ntaps)
 	powers := vlib.NewVectorF(Ntaps)
 	for n := 0; n < Ntaps; n++ {
@@ -74,6 +76,9 @@ func (p *PDPprofile) NormalizeInterp(ts float64) {
 	for n := 0; n < Ntaps; n++ {
 		powers[n] = math.Pow(powers[n], 2.0)
 	}
+	newpdp.DelayTaus = delays
+	newpdp.Power = powers
+	return newpdp
 	//  for k=1:length(x)
 	// plot(newtt,x(k)*sinc((newtt-tt(k))/ts))
 	// newpdp=newpdp+x(k)*sinc((newtt-tt(k))/ts);

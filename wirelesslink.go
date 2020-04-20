@@ -29,7 +29,11 @@ type WirelessLink struct {
 	lastTs     float64     // recent Timesamples
 	flatFading bool
 	ready      bool
+	ModeFrequency bool  // Always return FFT of the channel coeff, Resolution of Frequency BIN depends on the Profile
+	MaxResolutionTs float64 
+
 }
+
 
 func (w WirelessLink) IsFlatFading() bool {
 	return w.flatFading
@@ -60,6 +64,12 @@ func (w *WirelessLink) NextSample() complex128 {
 	}
 
 }
+
+
+func (w *WirelessLink) NextTDLSampleNormalize(){
+	
+}
+
 
 func (w *WirelessLink) NextTDLSample() [][]vlib.VectorC {
 
