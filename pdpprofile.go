@@ -83,7 +83,5 @@ func (p PDPprofile) NormalizeInterp(ts float64) PDPprofile {
 	// plot(newtt,x(k)*sinc((newtt-tt(k))/ts))
 	// newpdp=newpdp+x(k)*sinc((newtt-tt(k))/ts);
 	// end
-	pdp.DelayTaus = delays
-	pdp.Power = powers
-	return pdp
+
 }
