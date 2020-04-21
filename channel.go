@@ -9,25 +9,25 @@ import (
 // Stores the wireless environment related paramters
 // Each environment can have multiple wireless link-pairs (SRC-DEST)
 type Env struct {
-	EnvParams TestEnvironment //TestEnvironment Parameters based on in M.2412
-	NLinks    int             // Number of wireless links
-	Links     []*WirelessLink
-	base      BaseParam
+	// EnvParams TestEnvironment //TestEnvironment Parameters based on in M.2412
+	NLinks int // Number of wireless links
+	Links  []*WirelessLink
+	base   BaseParam
 }
 
 // NewChannel creates a Default Envinronment
 func NewEnv() *Env {
 	env := new(Env)
-	env.EnvParams.DefaultEnv()
-	env.EnvParams.Initialize()
+	// env.EnvParams.DefaultEnv()
+	// env.EnvParams.Initialize()
 	return env
 }
 
 // NewSimpleEnv creates a Default Rural based Wireless Channel Env, with single Tx-Rx links, with IID generator
 func NewSimpleEnv() *Env {
 	env := new(Env)
-	env.EnvParams.DefaultEnv()
-	env.EnvParams.Initialize()
+	// env.EnvParams.DefaultEnv()
+	// env.EnvParams.Initialize()
 	return env
 }
 
