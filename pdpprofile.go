@@ -50,7 +50,7 @@ func (p PDPprofile) Extrapolate(Ts unit.Duration, NTaps int, tapcoeff []complex1
 		result.PlusEqual(newpdp)
 	}
 
-	return result, delays
+	return result[0:NTaps], delays
 
 }
 

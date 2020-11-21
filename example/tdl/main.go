@@ -62,26 +62,14 @@ func DoMIMO(env *channel.Env, fd, Ts float64) {
 
 				hh := channel.MIMOCoeff(H)
 				_ = hh
-				fmt.Printf("\nt=%.2es %v", tt[t], hh)
+				fmt.Printf("\nSample time : t=%.2es %v", tt[t], hh)
 				if l == 0 { // only for the first link
 					hh0[t] = cmplx.Abs(hh[0][0][0]) // 1st tap
 					hh1[t] = cmplx.Abs(hh[0][0][1]) // 1st tap
 					hh2[t] = cmplx.Abs(hh[0][0][2]) // 1st tap
 					hh3[t] = cmplx.Abs(hh[0][0][3]) // 1st tap
 				}
-				// h := link.NextSample()
 
-				// y := RxSamples(H, x)
-				// _ = idx
-				// _ = y
-
-				// hh[t] = cmplx.Abs(H[0][0])
-
-				// fmt.Printf("\nLink (%d) t=%f ", idx, link.LastTsample())
-
-				// fmt.Printf("\nx=%v", x.MatString())
-				// fmt.Printf("\nH=%v", H.MatString())
-				// fmt.Printf("\ny=%v", y.MatString())
 			}
 		}
 	}
